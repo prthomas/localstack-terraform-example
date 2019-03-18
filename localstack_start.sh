@@ -1,2 +1,2 @@
-export SERVICES=s3,lambda,dynamodb,iam
+export SERVICES=s3,dynamodb
 localstack start

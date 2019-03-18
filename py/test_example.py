@@ -7,7 +7,6 @@ import unittest
 import botocore
 
 from localstack.constants import DEFAULT_SERVICE_PORTS
-from localstack.services import infra
 
 from boto3_s3 import Boto3S3
 from example import get_boto3_resource
@@ -21,7 +20,7 @@ class TestExample(unittest.TestCase):
     """
     @classmethod
     def setUpClass(cls):
-        cls.startservices = ['s3', 'dynamodb', 'lambda']
+        cls.startservices = ['s3', 'dynamodb']
         os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
         for service in cls.startservices:
             os.environ['{}_endpoint_url'.format(service)] = ''.join([
@@ -32,10 +31,14 @@ class TestExample(unittest.TestCase):
     def test_s3_to_dynamodb(self):
         """Test s3_to_dynamodb function"""
         boto3s3 = Boto3S3()
-        boto3s3.upload('gdata.csv', 'bucket_for_trigger')
-
+        s3rsrc = boto3s3.rsrc
+        s3bucket = s3rsrc.Bucket('bucket_for_trigger')
+        for obj in s3bucket.objects.all():
+            print(obj)
+        s3obj = s3rsrc.Object('bucket_for_trigger', 'gdata.csv')
+        self.assertEqual(s3obj.content_length, 1410)
+        s3_to_dynamodb('bucket_for_trigger', 'gdata.csv')
         dynamodb = get_boto3_resource('dynamodb')
-
         dynamotbl = dynamodb.Table('gdata')
         self.assertEqual(dynamotbl.item_count, 30)
         self.assertEqual(
