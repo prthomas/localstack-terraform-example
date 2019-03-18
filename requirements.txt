@@ -1,0 +1,2 @@
+localstack>=0.9.0
+BlastRadius>=0.1.23
